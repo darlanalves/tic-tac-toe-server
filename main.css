@@ -1,0 +1,24 @@
+.board {
+  display: table;
+}
+
+.board__row {
+  display: table-row;
+}
+
+.board__cell {
+  display: table-cell;
+}
+
+.board__cell--tic::before {
+  content: ' ';
+}
+
+.board__cell--tac::before {
+  content: 'X';
+}
+
+.board__cell--toe::before {
+  content: 'O';
+}
+
