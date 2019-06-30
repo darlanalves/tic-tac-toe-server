@@ -7,10 +7,10 @@ export interface Action {
   payload: any;
 }
 
-// export class StartAction implements Action {
-//   readonly type = 'start';
-//   constructor(public payload: { id: string }) { }
-// }
+export class RequestJoinAction implements Action {
+  readonly type = 'requestjoin';
+  constructor(public payload: { playerId: string; sessionId: string; }) { }
+}
 
 export class PlayerJoinAction implements Action {
   readonly type = 'join';

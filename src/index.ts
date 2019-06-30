@@ -1,11 +1,12 @@
-import { Action, PlayAction, UpdateAction, PlayerJoinAction } from './actions';
+import { Action, PlayAction, UpdateAction, PlayerJoinAction, RequestJoinAction } from './actions';
 import * as WebSocket from 'ws';
 import * as uuid from 'uuid';
 import { Session } from './session';
-import { Player, GameState } from './types';
+import { Player, GameState, SessionSummary } from './types';
 
 let socketServer: WebSocket.Server;
 let sessions: Map<string, Session>;
+const players: Map<string, string> = new Map();
 
 function toJSON(object) {
   return JSON.stringify(object);
@@ -75,7 +76,8 @@ function onRegister(payload: { id: string | null }) {
   return { type: 'register', payload: { id: playerId } };
 }
 
-function onJoin(client: WebSocket, playerId: string) {
+function onJoin(client: WebSocket, { payload }: RequestJoinAction) {
+  const { playerId } = payload;
   const previousSession = findPreviousSession(playerId);
 
   if (previousSession) {
@@ -88,7 +90,7 @@ function onJoin(client: WebSocket, playerId: string) {
     return new UpdateAction(previousSession.state);
   }
 
-  const sessionToJoin = findAvailableSession();
+  const sessionToJoin = findAvailableSession(payload.sessionId);
   let player = Player.A;
 
   if (sessionToJoin.playerA.client) {
@@ -110,12 +112,20 @@ function findPreviousSession(playerId: string): Session | null {
   });
 }
 
-function findAvailableSession(): Session {
+function sessionIsNotFull(session: Session) {
+  return !session.playerA.client || !session.playerB.client;
+}
+
+function findAvailableSession(sessionId?: string): Session {
+  const existingSession = sessionId && sessions.get(sessionId);
+
+  if (existingSession && sessionIsNotFull(existingSession)) {
+    return existingSession;
+  }
+
   const availableSession = Array.from(sessions)
     .map(([, session]) => session)
-    .find((session) => {
-      return !session.playerB;
-    });
+    .find(sessionIsNotFull);
 
   return availableSession || createSession();
 }
@@ -123,7 +133,8 @@ function findAvailableSession(): Session {
 function createSession(): Session {
   const id = uuid.v4();
   const state = new GameState({ id });
-  const session = { state };
+  const session = { state, playerA: {}, playerB: {} };
+
   sessions.set(id, session);
 
   return session;
@@ -137,6 +148,8 @@ function onClientConnect(client: WebSocket) {
       return;
     }
 
+    console.log('INCOMING', toJSON(action));
+
     const payload = action.payload;
 
     switch (action.type) {
@@ -144,19 +157,18 @@ function onClientConnect(client: WebSocket) {
         client.send(toJSON(onRegister(action.payload)));
         break;
 
-      case 'join':
-        if (!payload.id) {
+      case 'requestjoin':
+        if (!payload.playerId) {
           return;
         }
 
-        const joinAction = onJoin(client, payload.id);
-        client.send(toJSON(joinAction));
+        const joinResponseAction = onJoin(client, new RequestJoinAction(payload));
+        client.send(toJSON(joinResponseAction));
         break;
 
       case 'play':
         onPlay(new PlayAction(payload));
         break;
-
     }
   });
 
@@ -192,15 +204,20 @@ export function start(socketServerConfiguration) {
       socketServer.close();
     },
 
-    getSessions(): GameState[] {
-      const sessionSummary: GameState[] = [];
-      Array.from(sessions).reduce((stack, [, session]) => {
-        stack.push(session.state);
+    getSessions() {
+      const sessionSummary: SessionSummary[] = [];
+
+      return Array.from(sessions).reduce((stack, [, session]) => {
+        if (sessionIsNotFull(session)) {
+          stack.push({
+            id: session.state.id,
+            playerA: players.get(session.playerA.playerId) || '',
+            playerB: players.get(session.playerB.playerId) || '',
+          });
+        }
 
         return stack;
       }, sessionSummary);
-
-      return sessionSummary;
     }
   };
 }

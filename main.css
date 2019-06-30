@@ -17,9 +17,12 @@ body {
 
 .session-list {
   list-style: none;
+  display: table;
+  width: 100%;
 }
 
 .session-list__item {
+  display: table-cell;
   padding: 0.5rem;
 }
 
@@ -37,7 +40,9 @@ body {
   justify-content: flex-start;
 }
 
-.action-bar__item {
+.action-bar__item,
+.button {
+  font-size: 16px;
   border: 0;
   padding: 1rem;
   background: white;

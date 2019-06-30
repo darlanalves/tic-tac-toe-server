@@ -25,6 +25,10 @@ function updateStateView() {
 }
 
 function updateBoard() {
+  if (!session) {
+    return;
+  }
+
   const boardCells = Array.from(document.querySelectorAll('.board__cell'))
     .map((cell: HTMLDivElement) => ({
       node: cell,
@@ -92,7 +96,6 @@ function startClient(endpoint) {
 
       case 'join':
         session = action.payload;
-        updateBoard();
         break;
 
       case 'update':
@@ -101,11 +104,12 @@ function startClient(endpoint) {
         }
 
         session.state = action.payload;
-        updateBoard();
         break;
     }
 
+    updateBoard();
     updateStateView();
+    updateSessionList();
   };
 
   client.onopen = () => {
@@ -130,7 +134,9 @@ function updateSessionList() {
       .map((item) =>
         `<li class="session-list__item">
           <strong>${item.id}</strong>
-          <code>${toJSON(item)}</code>
+          <span>${item.playerA}</span>
+          <span>${item.playerB}</span>
+          <span><button class="button" onclick="TTT.join('${item.id}')">join</button></span>
         </li>`)
       .join('');
   });
@@ -145,10 +151,15 @@ class TicTacToe {
     return session;
   }
 
-  join() {
+  join(sessionId = '') {
     if (client) {
       const playerId = sessionStorage.getItem('playerId');
-      client.send(toJSON({ type: 'join', payload: { id: playerId } }));
+
+      if (!sessionId) {
+        sessionId = session ? session.state.id : '';
+      }
+
+      client.send(toJSON({ type: 'requestjoin', payload: { playerId, sessionId } }));
     }
   }
 

@@ -39,6 +39,12 @@ export class GameState {
   }
 }
 
+export interface SessionSummary {
+  id: string;
+  playerA: string;
+  playerB: string;
+}
+
 export interface PlayerState {
   player: Player;
   state: GameState;
