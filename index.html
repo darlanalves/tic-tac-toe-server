@@ -19,7 +19,7 @@
       <!-- <button type="button" class="action-bar__item" onclick="TTT.start()">Start Client</button> -->
       <button type="button" class="action-bar__item" onclick="TTT.join()">Join Game</button>
     </div>
-    <div class="board-state" id="state"></div>
+
     <div class="board" id="board">
       <div class="board__row">
         <div class="board__cell" data-position="8"></div>
@@ -37,8 +37,16 @@
         <div class="board__cell" data-position="0"></div>
       </div>
     </div>
-    <h2>Open Sessions:</h2>
+
+    <div class="scoreboard" id="scoreboard">
+      <div class="scoreboard__label-winner">You win!</div>
+      <div class="scoreboard__label-loser">You lost the game!</div>
+    </div>
+
+    <h3>Other game sessions:</h3>
     <ul id="session-list" class="session-list"></ul>
+
+    <div class="board-state" id="state"></div>
   </div>
 </body>
 

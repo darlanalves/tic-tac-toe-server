@@ -1,3 +1,4 @@
+import { SessionSummary } from './types';
 // tslint:disable: max-classes-per-file
 
 import { Play, GameState, PlayerState } from './types';
@@ -25,4 +26,14 @@ export class UpdateAction implements Action {
 export class PlayAction implements Action {
   readonly type = 'play';
   constructor(public payload: { id: string; play: Play }) { }
+}
+
+export class UpdateSessionListAction implements Action {
+  readonly type = 'updatesessionlist';
+  constructor(public payload: SessionSummary[]) { }
+}
+
+export class EndGameAction implements Action {
+  readonly type = 'endgame';
+  constructor(public payload: GameState) { }
 }

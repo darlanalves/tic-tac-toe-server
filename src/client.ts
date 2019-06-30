@@ -1,5 +1,7 @@
 import { PlayerState, ClientPlay } from './types';
 
+const debugEnabled = window.name === 'DEBUG';
+
 enum Player {
   A = 'a',
   B = 'b',
@@ -21,13 +23,20 @@ function toJSON(object) {
 }
 
 function updateStateView() {
-  document.getElementById('state').innerText = toJSON(session);
+  if (debugEnabled) {
+    document.getElementById('state').innerText = toJSON(session);
+  }
 }
 
 function updateBoard() {
   if (!session) {
     return;
   }
+
+  const scoreboard = document.getElementById('scoreboard');
+  scoreboard.className = 'scoreboard' +
+    (session.state.winner === session.player && ' scoreboard--winner' || '') +
+    (session.state.winner && session.state.winner !== session.player && ' scoreboard--loser' || '');
 
   const boardCells = Array.from(document.querySelectorAll('.board__cell'))
     .map((cell: HTMLDivElement) => ({
@@ -98,7 +107,12 @@ function startClient(endpoint) {
         session = action.payload;
         break;
 
+      case 'updatesessionlist':
+        updateSessionList(action.payload);
+        break;
+
       case 'update':
+      case 'endgame':
         if (!session) {
           return;
         }
@@ -109,7 +123,6 @@ function startClient(endpoint) {
 
     updateBoard();
     updateStateView();
-    updateSessionList();
   };
 
   client.onopen = () => {
@@ -128,18 +141,16 @@ function startClient(endpoint) {
   };
 }
 
-function updateSessionList() {
-  fetch('/sessions').then(v => v.json()).then((sessions) => {
-    document.getElementById('session-list').innerHTML = sessions
-      .map((item) =>
-        `<li class="session-list__item">
-          <strong>${item.id}</strong>
-          <span>${item.playerA}</span>
-          <span>${item.playerB}</span>
-          <span><button class="button" onclick="TTT.join('${item.id}')">join</button></span>
-        </li>`)
-      .join('');
-  });
+function updateSessionList(sessions) {
+  document.getElementById('session-list').innerHTML = sessions
+    .map((item) =>
+      `<li class="session-list__item">
+        <strong>${item.id}</strong>
+        <span>${item.playerA}</span>
+        <span>${item.playerB}</span>
+        <span><button class="button" onclick="TTT.join('${item.id}')">join</button></span>
+      </li>`)
+    .join('');
 }
 
 class TicTacToe {
@@ -211,7 +222,6 @@ export const TTT = new TicTacToe();
 
 (function () {
   document.addEventListener('DOMContentLoaded', () => {
-    updateSessionList();
     document.body.addEventListener('click', e => TTT.onCellClick(e));
     TTT.start();
   });

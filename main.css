@@ -11,28 +11,42 @@ body {
 }
 
 .page-wrapper {
-  width: 50%;
-  margin: auto;
+  padding: 1rem;
+}
+
+@media screen and (min-width: 1280px) {
+  .page-wrapper {
+    width: 50%;
+    margin: auto;
+  }
 }
 
 .session-list {
   list-style: none;
-  display: table;
   width: 100%;
 }
 
 .session-list__item {
-  display: table-cell;
+  display: flex;
+  width: 100%;
   padding: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
 }
 
 .board-state {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  right: 0;
   white-space: pre;
   font-family: monospace;
+}
+
+@media screen and (min-width: 1280px) {
+  .board-state {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+  }
 }
 
 .action-bar {
@@ -118,4 +132,17 @@ body {
 
 .board__cell[data-position="8"] {
   border-color: transparent gray gray transparent;
+}
+
+.scoreboard__label-winner,
+.scoreboard__label-loser {
+  display: none;
+  padding: 1rem;
+  background: gray;
+  color: white;
+}
+
+.scoreboard--winner .scoreboard__label-winner,
+.scoreboard--loser .scoreboard__label-loser {
+  display: block;
 }

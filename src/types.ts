@@ -20,6 +20,7 @@ export interface GameMoves {
 export class GameState {
   id: string;
   turn = Player.A;
+  winner: Player = null;
 
   moves: GameMoves = {
     playerA: [],
@@ -28,14 +29,6 @@ export class GameState {
 
   constructor(p: Partial<GameState>) {
     Object.assign(this, p);
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      turn: this.turn,
-      moves: this.moves,
-    };
   }
 }
 
