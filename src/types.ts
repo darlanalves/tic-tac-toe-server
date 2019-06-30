@@ -8,14 +8,38 @@ export interface Play {
   position: number;
 }
 
-export interface GameState {
+export interface ClientPlay {
   id: string;
-  playerA: number;
-  playerB: number;
+  play: Play;
+}
+
+export interface GameMoves {
+  playerA: number[];
+  playerB: number[];
+}
+export class GameState {
+  id: string;
+  turn = Player.A;
+
+  moves: GameMoves = {
+    playerA: [],
+    playerB: [],
+  };
+
+  constructor(p: Partial<GameState>) {
+    Object.assign(this, p);
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      turn: this.turn,
+      moves: this.moves,
+    };
+  }
 }
 
 export interface PlayerState {
-  id: string;
   player: Player;
   state: GameState;
 }

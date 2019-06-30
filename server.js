@@ -11,9 +11,8 @@ const socketServerConfiguration = {
   path: '/ws'
 };
 
+let tttServer;
 const httpServer = require('http').createServer((request, response) => {
-  let server;
-
   if (request.url === '/') {
     FS.createReadStream('./index.html').pipe(response);
     return;
@@ -27,17 +26,11 @@ const httpServer = require('http').createServer((request, response) => {
     return;
   }
 
-  function reset() {
-    server = start({
-      ...socketServerConfiguration,
-      server: httpServer
-    });
-  }
-
   switch (request.url.slice(1)) {
     case 'sockets':
-      if (!server) {
-        reset();
+      if (!tttServer) {
+        response.end('[]');
+        return;
       }
 
       response.end(toJSON([{
@@ -51,19 +44,34 @@ const httpServer = require('http').createServer((request, response) => {
       break;
 
     case 'sessions':
-      if (server) {
-        response.end(toJSON(server.getSessions()));
+      if (tttServer) {
+        response.end(toJSON(tttServer.getSessions()));
         return;
       }
 
       response.end('[]');
-
       break;
 
     default:
       response.writeHead(404, 'Not found');
       response.end();
   }
-})
+});
+
+function reset() {
+  if (tttServer) {
+    tttServer.close();
+  }
+
+  tttServer = start({
+    ...socketServerConfiguration,
+    server: httpServer
+  });
+}
 
 httpServer.listen(3000);
+
+if (!tttServer) {
+  reset();
+}
+

@@ -12,24 +12,33 @@
 </head>
 
 <body>
-  <div class="board">
-    <div class="board__row">
-      <div class="board__cell" data-position="8"></div>
-      <div class="board__cell" data-position="7"></div>
-      <div class="board__cell" data-position="6"></div>
+  <div class="page-wrapper">
+    <h1>Tic Tac Toe</h1>
+    <div class="action-bar">
+      <button type="button" class="action-bar__item" onclick="TTT.reset()">Reset</button>
+      <!-- <button type="button" class="action-bar__item" onclick="TTT.start()">Start Client</button> -->
+      <button type="button" class="action-bar__item" onclick="TTT.join()">Join Game</button>
     </div>
-    <div class="board__row">
-      <div class="board__cell" data-position="5"></div>
-      <div class="board__cell" data-position="4"></div>
-      <div class="board__cell" data-position="3"></div>
+    <div class="board-state" id="state"></div>
+    <div class="board" id="board">
+      <div class="board__row">
+        <div class="board__cell" data-position="8"></div>
+        <div class="board__cell" data-position="7"></div>
+        <div class="board__cell" data-position="6"></div>
+      </div>
+      <div class="board__row">
+        <div class="board__cell" data-position="5"></div>
+        <div class="board__cell" data-position="4"></div>
+        <div class="board__cell" data-position="3"></div>
+      </div>
+      <div class="board__row">
+        <div class="board__cell" data-position="2"></div>
+        <div class="board__cell" data-position="1"></div>
+        <div class="board__cell" data-position="0"></div>
+      </div>
     </div>
-    <div class="board__row">
-      <div class="board__cell" data-position="2"></div>
-      <div class="board__cell" data-position="1"></div>
-      <div class="board__cell" data-position="0"></div>
-    </div>
+    <ul id="session-list" class="session-list"></ul>
   </div>
-  <ul id="session-list"></ul>
 </body>
 
 </html>

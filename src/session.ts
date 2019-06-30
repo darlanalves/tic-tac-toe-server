@@ -1,13 +1,12 @@
 import { GameState } from './types';
 import * as WebSocket from 'ws';
 
-export interface Session {
-  playerA?: WebSocket;
-  playerB?: WebSocket;
-  state: GameState;
+export interface SessionState {
+  playerId: string;
+  client: WebSocket;
 }
-
-export interface SessionSummary {
-  id: string;
+export interface Session {
+  playerA?: SessionState;
+  playerB?: SessionState;
   state: GameState;
 }
