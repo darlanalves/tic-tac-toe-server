@@ -3,14 +3,10 @@ export enum Player {
   B = 'b',
 }
 
-export interface Play {
-  player: Player;
-  position: number;
-}
-
 export interface ClientPlay {
   id: string;
-  play: Play;
+  playerId: string;
+  position: number;
 }
 
 export interface GameMoves {
@@ -19,9 +15,11 @@ export interface GameMoves {
 }
 export class GameState {
   id: string;
-  turn = Player.A;
+  players = {
+    playerA: '',
+    playerB: '',
+  };
   winner: Player = null;
-
   moves: GameMoves = {
     playerA: [],
     playerB: [],
@@ -30,15 +28,29 @@ export class GameState {
   constructor(p: Partial<GameState>) {
     Object.assign(this, p);
   }
+
+  get turn(): Player {
+    if (this.moves.playerA.length === 0) {
+      return Player.A;
+    }
+
+    return this.moves.playerB.length < this.moves.playerA.length ?
+      Player.B : Player.A;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      winner: this.winner,
+      turn: this.turn,
+      moves: this.moves,
+      players: this.players,
+    };
+  }
 }
 
 export interface SessionSummary {
   id: string;
   playerA: string;
   playerB: string;
-}
-
-export interface PlayerState {
-  player: Player;
-  state: GameState;
 }

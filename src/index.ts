@@ -1,4 +1,4 @@
-import { Action, PlayAction, UpdateAction, PlayerJoinAction, RequestJoinAction, UpdateSessionListAction, EndGameAction } from './actions';
+import { Action, UpdateAction, RequestJoinAction, UpdateSessionListAction } from './actions';
 import * as WebSocket from 'ws';
 import * as uuid from 'uuid';
 import { Session } from './session';
@@ -18,7 +18,7 @@ function fromJSON(text) {
 }
 
 function sessionIsNotFull(session: Session) {
-  return !session.playerA.client || !session.playerB.client;
+  return !session.playerA || !session.playerB;
 }
 
 export class TicTacToe {
@@ -29,43 +29,42 @@ export class TicTacToe {
     const json = toJSON(message);
 
     this.sessions.forEach(session => {
-      if (session.playerA.client) {
-        session.playerA.client.send(json);
+      if (session.playerA) {
+        session.playerA.send(json);
       }
 
-      if (session.playerB.client) {
-        session.playerB.client.send(json);
+      if (session.playerB) {
+        session.playerB.send(json);
       }
     });
   }
 
-  onPlay(session: Session, action: PlayAction) {
+  onPlay(session: Session, position: number, playerId: string) {
     const currentState = session.state;
-    const play = action.payload.play;
+    const player = currentState.players.playerA === playerId ? Player.A : Player.B;
 
-    if (currentState.turn !== play.player) {
+    if (currentState.turn !== player) {
+      console.log('Invalid turn', currentState, player);
       return;
     }
 
-    const isPlayerA = play.player === Player.A;
+    const isPlayerA = player === Player.A;
     const moves = currentState.moves;
     const playerMoves = isPlayerA ? moves.playerA : moves.playerB;
     const opponentMoves = isPlayerA ? moves.playerB : moves.playerA;
 
-    currentState.turn = isPlayerA ? Player.B : Player.A;
-
-    if (playerMoves.indexOf(play.position) > -1 || opponentMoves.indexOf(play.position) > -1) {
+    if (playerMoves.indexOf(position) > -1 || opponentMoves.indexOf(position) > -1) {
       return;
     }
 
-    playerMoves.push(play.position);
+    playerMoves.push(position);
     playerMoves.sort();
 
     this.checkMoves(currentState, currentState.moves.playerA, Player.A);
     this.checkMoves(currentState, currentState.moves.playerB, Player.B);
 
     if (currentState.winner) {
-      return new EndGameAction(currentState);
+      return new UpdateAction(currentState);
     }
 
     return new UpdateAction(currentState);
@@ -74,12 +73,12 @@ export class TicTacToe {
   onRegister(payload: { id: string | null }) {
     if (payload.id) {
       this.sessions.forEach(session => {
-        if (session.playerA.playerId === payload.id) {
-          session.playerA.client = null;
+        if (session.state.players.playerA === payload.id) {
+          session.playerA = null;
         }
 
-        if (session.playerB.playerId === payload.id) {
-          session.playerB.client = null;
+        if (session.state.players.playerB === payload.id) {
+          session.playerB = null;
         }
       });
     }
@@ -88,34 +87,42 @@ export class TicTacToe {
     return { type: 'register', payload: { id: playerId } };
   }
 
+  onJoinNew(client: WebSocket, { payload }: RequestJoinAction) {
+    const { playerId } = payload;
+    const session = this.createSession();
+
+    return this.onJoinImpl(client, session, playerId);
+  }
+
   onJoin(client: WebSocket, { payload }: RequestJoinAction) {
     const { playerId } = payload;
     const previousSession = this.findPreviousSession(playerId);
 
     if (previousSession) {
-      if (previousSession.playerA.playerId === playerId) {
-        previousSession.playerA.client = client;
+      if (previousSession.state.players.playerA === playerId) {
+        previousSession.playerA = client;
       } else {
-        previousSession.playerB.client = client;
+        previousSession.playerB = client;
       }
 
       return new UpdateAction(previousSession.state);
     }
 
     const sessionToJoin = this.findAvailableSession(payload.sessionId);
-    let player = Player.A;
 
-    if (sessionToJoin.playerA.client && sessionToJoin.playerA.playerId !== playerId) {
-      player = Player.B;
-      sessionToJoin.playerB.client = client;
+    return this.onJoinImpl(client, sessionToJoin, playerId);
+  }
+
+  private onJoinImpl(client: WebSocket, session: Session, playerId: string) {
+    if (session.playerA) {
+      session.playerB = client;
+      session.state.players.playerB = playerId;
     } else {
-      sessionToJoin.playerA.client = client;
+      session.playerA = client;
+      session.state.players.playerA = playerId;
     }
 
-    return new PlayerJoinAction({
-      player: player,
-      state: sessionToJoin.state
-    });
+    return new UpdateAction(session.state);
   }
 
   onUpdateSessionList() {
@@ -125,8 +132,8 @@ export class TicTacToe {
       if (sessionIsNotFull(session)) {
         stack.push({
           id: session.state.id,
-          playerA: this.players.get(session.playerA.playerId) || '',
-          playerB: this.players.get(session.playerB.playerId) || '',
+          playerA: this.players.get(session.state.players.playerA),
+          playerB: this.players.get(session.state.players.playerB),
         });
       }
 
@@ -150,7 +157,7 @@ export class TicTacToe {
 
       switch (action.type) {
         case 'register':
-          client.send(toJSON(this.onRegister(action.payload)));
+          client.send(toJSON(this.onRegister(payload)));
           client.send(toJSON(this.onUpdateSessionList()));
           break;
 
@@ -163,22 +170,29 @@ export class TicTacToe {
           this.broadcast(this.onUpdateSessionList());
           break;
 
+        case 'requestnew':
+          if (!payload.playerId) {
+            return;
+          }
+
+          client.send(toJSON(this.onJoinNew(client, new RequestJoinAction(payload))));
+          this.broadcast(this.onUpdateSessionList());
+          break;
+
         case 'play':
-          const session = this.sessions.get(action.payload.id);
+          const session = this.sessions.get(payload.id);
 
           if (!session) {
             return;
           }
 
-          const updateState = this.onPlay(session, new PlayAction(payload));
-          if (session.playerA.client) {
-            session.playerA.client.send(toJSON(updateState));
-            session.playerA.client = null;
+          const updateState = this.onPlay(session, payload.position, payload.playerId);
+          if (session.playerA) {
+            session.playerA.send(toJSON(updateState));
           }
 
-          if (session.playerB.client) {
-            session.playerB.client.send(toJSON(updateState));
-            session.playerB.client = null;
+          if (session.playerB) {
+            session.playerB.send(toJSON(updateState));
           }
           break;
       }
@@ -186,12 +200,12 @@ export class TicTacToe {
 
     client.on('close', (_) => {
       this.sessions.forEach(session => {
-        if (session.playerA.client === client) {
-          session.playerA.client = null;
+        if (session.playerA === client) {
+          session.playerA = null;
         }
 
-        if (session.playerB.client === client) {
-          session.playerB.client = null;
+        if (session.playerB === client) {
+          session.playerB = null;
         }
       });
     });
@@ -205,7 +219,8 @@ export class TicTacToe {
 
   private findPreviousSession(playerId: string): Session | null {
     return Array.from(this.sessions).map(([, session]) => session).find(session => {
-      return (session.playerA.playerId === playerId || session.playerB.playerId === playerId);
+      return (session.state.players.playerA === playerId || session.state.players.playerB === playerId)
+        && !session.state.winner;
     });
   }
 
@@ -226,7 +241,7 @@ export class TicTacToe {
   private createSession(): Session {
     const id = uuid.v4();
     const state = new GameState({ id });
-    const session = { state, playerA: {}, playerB: {} };
+    const session = { state, playerA: null, playerB: null };
 
     this.sessions.set(id, session);
 

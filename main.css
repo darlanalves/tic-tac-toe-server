@@ -4,10 +4,53 @@
   box-sizing: border-box;
 }
 
-html,
+.heading,
+h1,
+h2 {
+  font-family: "Quicksand", sans-serif;
+}
+
+html {
+  font-size: 10px;
+  font-family: "Open Sans", sans-serif;
+}
+
 body {
-  font-size: 16px;
-  font-family: sans-serif;
+  background: rgba(112, 79, 218, 0.9);
+  font-size: 1.6rem;
+}
+
+.button {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  display: inline-block;
+  position: relative;
+  font-size: 1.4rem;
+  line-height: 1.4rem;
+  font-weight: 500;
+  text-align: center;
+  border-radius: 6px;
+  margin: 0;
+  padding: 1rem 2rem;
+  outline: none;
+  transition: box-shadow 0.2s linear;
+}
+
+.button:focus,
+.button:active,
+.button:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.box-shadow {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.section__header {
+  padding: 1rem 2rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
 }
 
 .page-wrapper {
@@ -21,45 +64,37 @@ body {
   }
 }
 
+.header__wrapper {
+  background: #fff;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+}
+
+.header__title {
+  order: 2;
+}
+
 .session-list {
   list-style: none;
   width: 100%;
+  margin-top: 1.6rem;
+  background: white;
 }
 
 .session-list__item {
   display: flex;
   width: 100%;
-  padding: 0.5rem;
+  padding: 1rem 2rem;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #eee;
 }
 
-.board-state {
-  white-space: pre;
-  font-family: monospace;
-}
-
-@media screen and (min-width: 1280px) {
-  .board-state {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    right: 0;
-  }
-}
-
 .action-bar {
   display: flex;
   justify-content: flex-start;
-}
-
-.action-bar__item,
-.button {
-  font-size: 16px;
-  border: 0;
-  padding: 1rem;
-  background: white;
 }
 
 .board {
@@ -68,6 +103,23 @@ body {
   margin: 2rem auto;
   border-spacing: 0;
   zoom: 2;
+  box-shadow: 0px 0px 0px 0px #eee;
+  transition: box-shadow 0.2s linear;
+  border: 1px solid white;
+}
+
+.board[player="a"] {
+  background: rgba(239, 121, 47, 0.9);
+}
+
+.board[player="b"] {
+  background: rgba(67, 76, 105, 0.9);
+  /* background: rgba(112, 79, 218, 0.9); */
+}
+
+.board[player="a"][turn="a"],
+.board[player="b"][turn="b"] {
+  box-shadow: 0px 0px 8px 2px #eee;
 }
 
 .board__row {
@@ -76,7 +128,7 @@ body {
 
 .board__cell {
   display: table-cell;
-  border-width: 2px;
+  border-width: 1px;
   border-style: solid;
   border-color: transparent;
   width: 50px;
@@ -84,6 +136,9 @@ body {
   cursor: pointer;
   vertical-align: middle;
   text-align: center;
+  color: white;
+  font-size: 3rem;
+  line-height: 3rem;
 }
 
 .board__cell[data-state="tic"]::before {
@@ -91,7 +146,7 @@ body {
 }
 
 .board__cell[data-state="tac"]::before {
-  content: "X";
+  content: "×";
 }
 
 .board__cell[data-state="toe"]::before {
@@ -99,50 +154,68 @@ body {
 }
 
 .board__cell[data-position="0"] {
-  border-color: gray transparent transparent gray;
+  border-color: white transparent transparent white;
 }
 
 .board__cell[data-position="1"] {
-  border-color: gray gray transparent gray;
+  border-color: white white transparent white;
 }
 
 .board__cell[data-position="2"] {
-  border-color: gray gray transparent transparent;
+  border-color: white white transparent transparent;
 }
 
 .board__cell[data-position="3"] {
-  border-color: gray transparent gray gray;
+  border-color: white transparent white white;
 }
 
 .board__cell[data-position="4"] {
-  border-color: gray;
+  border-color: white;
 }
 
 .board__cell[data-position="5"] {
-  border-color: gray gray gray transparent;
+  border-color: white white white transparent;
 }
 
 .board__cell[data-position="6"] {
-  border-color: transparent transparent gray gray;
+  border-color: transparent transparent white white;
 }
 
 .board__cell[data-position="7"] {
-  border-color: transparent gray gray gray;
+  border-color: transparent white white white;
 }
 
 .board__cell[data-position="8"] {
-  border-color: transparent gray gray transparent;
+  border-color: transparent white white transparent;
+}
+
+.scoreboard {
+  overflow: hidden;
+}
+
+.scoreboard__label-winner,
+.scoreboard__label-loser {
+  background: white;
+  overflow: hidden;
+  opacity: 0;
+  font-size: 2rem;
+  line-height: 2rem;
+  border-radius: 6px;
+  transition: opacity 1s linear;
 }
 
 .scoreboard__label-winner,
 .scoreboard__label-loser {
   display: none;
-  padding: 1rem;
-  background: gray;
-  color: white;
+}
+
+.scoreboard--winner,
+.scoreboard--loser {
+  opacity: 1;
 }
 
 .scoreboard--winner .scoreboard__label-winner,
 .scoreboard--loser .scoreboard__label-loser {
   display: block;
+  padding: 2rem;
 }

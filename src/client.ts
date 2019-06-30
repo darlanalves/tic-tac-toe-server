@@ -1,13 +1,11 @@
-import { PlayerState, ClientPlay } from './types';
-
-const debugEnabled = window.name === 'DEBUG';
+import { ClientPlay, GameState } from './types';
 
 enum Player {
   A = 'a',
   B = 'b',
 }
 
-let session: PlayerState;
+let state: GameState;
 let client: WebSocket;
 
 function fromJSON(text) {
@@ -22,30 +20,38 @@ function toJSON(object) {
   return JSON.stringify(object, null, 2);
 }
 
-function updateStateView() {
-  if (debugEnabled) {
-    document.getElementById('state').innerText = toJSON(session);
-  }
+function getCurrentPlayer() {
+  const playerId = getPlayerId();
+  return state.players.playerA === playerId ? Player.A : Player.B;
+}
+
+function getPlayerId() {
+  return sessionStorage.getItem('playerId');
 }
 
 function updateBoard() {
-  if (!session) {
+  if (!state) {
     return;
   }
 
   const scoreboard = document.getElementById('scoreboard');
+  const currentPlayer = getCurrentPlayer();
   scoreboard.className = 'scoreboard' +
-    (session.state.winner === session.player && ' scoreboard--winner' || '') +
-    (session.state.winner && session.state.winner !== session.player && ' scoreboard--loser' || '');
+    (state.winner === currentPlayer && ' scoreboard--winner' || '') +
+    (state.winner && state.winner !== currentPlayer && ' scoreboard--loser' || '');
 
-  const boardCells = Array.from(document.querySelectorAll('.board__cell'))
+  const board = document.getElementById('board');
+  board.setAttribute('player', currentPlayer);
+  board.setAttribute('turn', state.turn);
+
+  const boardCells = Array.from(board.querySelectorAll('.board__cell'))
     .map((cell: HTMLDivElement) => ({
       node: cell,
       position: Number(cell.dataset.position),
     }));
 
-  const isPlayerA = session.player === Player.A;
-  const allMoves = session.state.moves;
+  const isPlayerA = currentPlayer === Player.A;
+  const allMoves = state.moves;
 
   let moves: { player: number[]; opponent: number[]; };
 
@@ -73,17 +79,17 @@ function updateBoard() {
       toe = moves.player.indexOf(cell.position) > -1;
     }
 
-    let state = 'tic';
+    let cellState = 'tic';
 
     if (tac) {
-      state = 'tac';
+      cellState = 'tac';
     }
 
     if (toe) {
-      state = 'toe';
+      cellState = 'toe';
     }
 
-    cell.node.setAttribute('data-state', state);
+    cell.node.setAttribute('data-state', cellState);
   });
 }
 
@@ -101,10 +107,12 @@ function startClient(endpoint) {
     switch (action.type) {
       case 'register':
         sessionStorage.setItem('playerId', action.payload.id);
-        break;
-
-      case 'join':
-        session = action.payload;
+        client.send(toJSON({
+          type: 'requestjoin', payload: {
+            playerId: action.payload.id,
+            sessionId: ''
+          }
+        }));
         break;
 
       case 'updatesessionlist':
@@ -112,17 +120,11 @@ function startClient(endpoint) {
         break;
 
       case 'update':
-      case 'endgame':
-        if (!session) {
-          return;
-        }
-
-        session.state = action.payload;
+        state = action.payload;
         break;
     }
 
     updateBoard();
-    updateStateView();
   };
 
   client.onopen = () => {
@@ -146,8 +148,8 @@ function updateSessionList(sessions) {
     .map((item) =>
       `<li class="session-list__item">
         <strong>${item.id}</strong>
-        <span>${item.playerA}</span>
-        <span>${item.playerB}</span>
+        <span>${item.playerA || '-'}</span>
+        <span>${item.playerB || '-'}</span>
         <span><button class="button" onclick="TTT.join('${item.id}')">join</button></span>
       </li>`)
     .join('');
@@ -159,15 +161,20 @@ class TicTacToe {
   }
 
   get session() {
-    return session;
+    return state;
   }
 
   join(sessionId = '') {
     if (client) {
       const playerId = sessionStorage.getItem('playerId');
 
+      if (sessionId === 'new') {
+        client.send(toJSON({ type: 'requestnew', payload: { playerId } }));
+        return;
+      }
+
       if (!sessionId) {
-        sessionId = session ? session.state.id : '';
+        sessionId = state ? state.id : '';
       }
 
       client.send(toJSON({ type: 'requestjoin', payload: { playerId, sessionId } }));
@@ -175,16 +182,14 @@ class TicTacToe {
   }
 
   play(position: number) {
-    if (!client || !session) {
+    if (!client || !state) {
       return;
     }
 
     const play: ClientPlay = {
-      id: session.state.id,
-      play: {
-        position,
-        player: session.player,
-      }
+      id: state.id,
+      playerId: getPlayerId(),
+      position,
     };
 
     client.send(toJSON({

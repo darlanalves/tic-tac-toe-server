@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Quicksand&display=swap" rel="stylesheet">
   <script>window.module = { exports: window }; window.exports = window; window.require = () => { };</script>
   <script src="/dist/client.js"></script>
   <link rel="stylesheet" href="/main.css">
@@ -12,14 +13,15 @@
 </head>
 
 <body>
-  <div class="page-wrapper">
-    <h1>Tic Tac Toe</h1>
+  <div class="header__wrapper box-shadow">
+    <h1 class="header__title">Tic Tac Toe</h1>
     <div class="action-bar">
-      <button type="button" class="action-bar__item" onclick="TTT.reset()">Reset</button>
-      <!-- <button type="button" class="action-bar__item" onclick="TTT.start()">Start Client</button> -->
-      <button type="button" class="action-bar__item" onclick="TTT.join()">Join Game</button>
+      <!-- <button type="button" class="action-bar__item" onclick="TTT.reset()">Reset</button> -->
+      <button type="button" class="action-bar__item button" onclick="TTT.join('new')">Join Another Game</button>
     </div>
+  </div>
 
+  <div class="page-wrapper">
     <div class="board" id="board">
       <div class="board__row">
         <div class="board__cell" data-position="8"></div>
@@ -43,10 +45,10 @@
       <div class="scoreboard__label-loser">You lost the game!</div>
     </div>
 
-    <h3>Other game sessions:</h3>
-    <ul id="session-list" class="session-list"></ul>
-
-    <div class="board-state" id="state"></div>
+    <div class="session-list box-shadow section">
+      <h2 class="section__header">Other game sessions:</h2>
+      <ul id="session-list"></ul>
+    </div>
   </div>
 </body>
 
