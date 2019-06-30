@@ -1,5 +1,8 @@
 .board {
   display: table;
+  width: 150px;
+  margin: 2rem auto;
+  border-spacing: 0;
 }
 
 .board__row {
@@ -8,17 +11,58 @@
 
 .board__cell {
   display: table-cell;
+  border-width: 2px;
+  border-style: solid;
+  border-color: transparent;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
 }
 
 .board__cell--tic::before {
-  content: ' ';
+  content: " ";
 }
 
 .board__cell--tac::before {
-  content: 'X';
+  content: "X";
 }
 
 .board__cell--toe::before {
-  content: 'O';
+  content: "O";
 }
 
+.board__cell[data-position="0"] {
+  border-color: gray transparent transparent gray;
+}
+
+.board__cell[data-position="1"] {
+  border-color: gray gray transparent gray;
+}
+
+.board__cell[data-position="2"] {
+  border-color: gray gray transparent transparent;
+}
+
+.board__cell[data-position="3"] {
+  border-color: gray transparent gray gray;
+}
+
+.board__cell[data-position="4"] {
+  border-color: gray;
+}
+
+.board__cell[data-position="5"] {
+  border-color: gray gray gray transparent;
+}
+
+.board__cell[data-position="6"] {
+  border-color: transparent transparent gray gray;
+}
+
+.board__cell[data-position="7"] {
+  border-color: transparent gray gray gray;
+}
+
+.board__cell[data-position="8"] {
+  border-color: transparent gray gray transparent;
+}

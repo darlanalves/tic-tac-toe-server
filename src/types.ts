@@ -13,3 +13,9 @@ export interface GameState {
   playerA: number;
   playerB: number;
 }
+
+export interface PlayerState {
+  id: string;
+  player: Player;
+  state: GameState;
+}

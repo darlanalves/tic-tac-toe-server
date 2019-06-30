@@ -15,9 +15,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "downlevelIteration": true,
-    "target": "es5",
+    "target": "esnext",
     "importHelpers": true,
-    "module": "commonjs",
+    "module": "umd",
+    "allowUmdGlobalAccess": true,
     "noEmitHelpers": true,
     "lib": [
       "es2016",
@@ -25,7 +26,6 @@
     ]
   },
   "exclude": [
-    "./dist/*.ts",
-    "./dist/**/*.ts"
+    "**/dist/**/*.ts"
   ]
 }

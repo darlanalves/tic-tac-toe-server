@@ -1,7 +1,10 @@
 const {start} = require('./dist/index');
 const FS = require('fs');
 const Path = require('path');
-// const server = start();
+
+function toJSON(object) {
+  return JSON.stringify(object);
+}
 
 const socketServerConfiguration = {
   port: 8080,
@@ -24,32 +27,37 @@ const httpServer = require('http').createServer((request, response) => {
     return;
   }
 
+  function reset() {
+    server = start({
+      ...socketServerConfiguration,
+      server: httpServer
+    });
+  }
+
   switch (request.url.slice(1)) {
     case 'sockets':
       if (!server) {
-        server = start({
-          ...socketServerConfiguration,
-          server: httpServer
-        });
+        reset();
       }
 
-      response.end(JSON.stringify([{
+      response.end(toJSON([{
         url: `ws://localhost:${socketServerConfiguration.port}${socketServerConfiguration.path}`
       }]));
       break;
 
     case 'reset':
-      server = start();
+      reset();
       response.end('OK');
       break;
 
     case 'sessions':
-      if (!server) {
-        response.writeHead(404, 'Not found');
-        response.end();
+      if (server) {
+        response.end(toJSON(server.getSessions()));
+        return;
       }
 
-      response.end(server.getSessions());
+      response.end('[]');
+
       break;
 
     default:

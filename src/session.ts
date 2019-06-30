@@ -7,3 +7,7 @@ export interface Session {
   state: GameState;
 }
 
+export interface SessionSummary {
+  id: string;
+  state: GameState;
+}
