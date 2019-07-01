@@ -9,9 +9,10 @@ export interface ClientPlay {
   position: number;
 }
 
+export type GameMoveArray = [number?, number?, number?, number?, number?];
 export interface GameMoves {
-  playerA: number[];
-  playerB: number[];
+  playerA: GameMoveArray;
+  playerB: GameMoveArray;
 }
 export class GameState {
   id: string;

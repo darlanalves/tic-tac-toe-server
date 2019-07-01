@@ -1,9 +1,9 @@
 :root {
   --base-gray-dark: rgb(33, 25, 21);
-  
+
   --base-red-dark: rgb(128, 20, 20);
   --base-red-light: rgb(182, 67, 58);
-  
+
   --base-purple: rgb(112, 79, 218);
 }
 
@@ -17,6 +17,11 @@
 h1,
 h2 {
   font-family: "Quicksand", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 html {

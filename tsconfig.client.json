@@ -8,7 +8,7 @@
       "node"
     ],
     "baseUrl": "./",
-    "outDir": "./dist",
+    "outFile": "static/client.js",
     "sourceMap": false,
     "declaration": false,
     "moduleResolution": "node",
@@ -17,18 +17,18 @@
     "downlevelIteration": true,
     "target": "esnext",
     "importHelpers": true,
-    "module": "commonjs",
+    "module": "amd",
     "allowUmdGlobalAccess": true,
     "noEmitHelpers": true,
     "lib": [
-      "es2016",
+      "esnext",
       "dom"
     ]
   },
   "exclude": [
     "**/dist/**/*.ts"
   ],
-  "include": [
-    "**/app/**/*.ts"
+  "files": [
+    "client/client.ts"
   ]
 }

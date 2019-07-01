@@ -95,7 +95,7 @@ export class TicTacToe {
   }
 
   onJoin(client: WebSocket, { payload }: RequestJoinAction) {
-    const { playerId } = payload;
+    const { playerId, sessionId } = payload;
     const previousSession = this.findPreviousSession(playerId);
 
     if (previousSession) {
@@ -108,7 +108,7 @@ export class TicTacToe {
       return new UpdateAction(previousSession.state);
     }
 
-    const sessionToJoin = this.findAvailableSession(payload.sessionId);
+    const sessionToJoin = this.findAvailableSession(sessionId);
 
     return this.onJoinImpl(client, sessionToJoin, playerId);
   }
@@ -212,7 +212,16 @@ export class TicTacToe {
   }
 
   private checkMoves(state: GameState, moves: number[], player: Player) {
-    if (winners.indexOf(moves.join(',').slice(0, 5)) > -1) {
+    const isWinner = winners.reduce((previous, winnerMoves) => {
+      const current =
+        moves.includes(winnerMoves[0]) &&
+        moves.includes(winnerMoves[1]) &&
+        moves.includes(winnerMoves[2]);
+
+      return previous || current;
+    }, false);
+
+    if (isWinner) {
       state.winner = player;
     }
   }

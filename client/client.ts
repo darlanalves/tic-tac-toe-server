@@ -1,4 +1,4 @@
-import { ClientPlay, GameState } from './types';
+import { ClientPlay, GameState } from '../app/types';
 
 enum Player {
   A = 'a',
