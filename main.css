@@ -1,3 +1,12 @@
+:root {
+  --base-gray-dark: rgb(33, 25, 21);
+  
+  --base-red-dark: rgb(128, 20, 20);
+  --base-red-light: rgb(182, 67, 58);
+  
+  --base-purple: rgb(112, 79, 218);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +25,7 @@ html {
 }
 
 body {
-  background: rgba(112, 79, 218, 0.9);
+  background: linear-gradient(var(--base-red-light), var(--base-red-dark));
   font-size: 1.6rem;
 }
 
