@@ -69,7 +69,7 @@ function reset() {
   });
 }
 
-httpServer.listen(3000);
+httpServer.listen(process.env.PORT || 3000);
 
 if (!tttServer) {
   reset();
