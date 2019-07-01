@@ -20,7 +20,7 @@
     "build": "npm run clean && tsc -p .",
     "test": "ts-node --project ./tsconfig.spec.json",
     "dev": "npm run clean && tsc -p . -w",
-    "dev-client": "npm run clean && tsc --project tsconfig.client.json -w",
+    "dev-client": "tsc --project tsconfig.client.json -w",
     "clean": "rm -rf ./dist/"
   },
   "author": "",

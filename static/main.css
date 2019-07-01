@@ -131,11 +131,6 @@ body {
   /* background: rgba(112, 79, 218, 0.9); */
 }
 
-.board[player="a"][turn="a"],
-.board[player="b"][turn="b"] {
-  box-shadow: 0px 0px 8px 2px #eee;
-}
-
 .board__row {
   display: table-row;
 }
@@ -204,32 +199,17 @@ body {
 }
 
 .scoreboard {
-  overflow: hidden;
-}
-
-.scoreboard__label-winner,
-.scoreboard__label-loser {
   background: white;
   overflow: hidden;
   opacity: 0;
   font-size: 2rem;
   line-height: 2rem;
   border-radius: 6px;
+  padding: 2rem;
   transition: opacity 1s linear;
 }
 
-.scoreboard__label-winner,
-.scoreboard__label-loser {
-  display: none;
-}
-
-.scoreboard--winner,
-.scoreboard--loser {
-  opacity: 1;
-}
-
-.scoreboard--winner .scoreboard__label-winner,
-.scoreboard--loser .scoreboard__label-loser {
-  display: block;
-  padding: 2rem;
+.turn-indicator[player="a"][turn="a"],
+.turn-indicator[player="b"][turn="b"] {
+  box-shadow: 0px 0px 8px 2px #eee;
 }
